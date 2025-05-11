@@ -1,20 +1,19 @@
-import os
-import openai
-import sys
-sys.path.append('../..')
-
-from dotenv import load_dotenv, find_dotenv
-_ = load_dotenv(find_dotenv()) # read local .env file
-
-openai.api_key  = os.environ['OPENAI_API_KEY']
-
+# import sys
+# sys.path.append('../..')
+from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader
+
+
+current_path = Path.cwd()
+root_path = current_path.parent
+data_path = root_path / "data"
 
 # Load PDF
 loaders = [
     # Duplicate documents on purpose - messy data
-    PyPDFLoader("../data/survey.pdf"),
-    PyPDFLoader("../data/my_pdf.pdf"),
+    PyPDFLoader(data_path / "survey.pdf"),
+    PyPDFLoader(data_path / "my_pdf.pdf"),
+    PyPDFLoader(data_path / "ebeebc7b-170e-4c21-9ba7-3e767ac5fcb2-vaf.pdf"),
 ]
 docs = []
 for loader in loaders:
@@ -39,7 +38,7 @@ embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L
 
 from langchain_community.vectorstores import Chroma
 
-persist_directory = 'docs/chroma/'
+persist_directory = str(root_path / 'docs' / 'chroma')
 
 vectordb = Chroma.from_documents(
     documents=splits,

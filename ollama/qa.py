@@ -1,23 +1,16 @@
-import os
-import openai
-import sys
-sys.path.append('../..')
-
-from dotenv import load_dotenv, find_dotenv
-_ = load_dotenv(find_dotenv()) # read local .env file
-
-openai.api_key  = os.environ['OPENAI_API_KEY']
+from pathlib import Path
 
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
-persist_directory = 'docs/chroma/'
+current_path = Path.cwd()
+persist_directory = current_path.parent / 'docs' / 'chroma'
 embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-vectordb = Chroma(persist_directory=persist_directory, embedding_function=embedding)
+vectordb = Chroma(persist_directory=str(persist_directory), embedding_function=embedding)
 
 print(vectordb._collection.count())
 
-question = "What is the roof condition of the house?"
+question = ("Any information about my partner?")
 docs = vectordb.similarity_search(question,k=3)
 print(docs[0].page_content)
 
@@ -27,7 +20,7 @@ llm = ChatOllama(model="llama3")
 from langchain.chains import RetrievalQA
 qa_chain = RetrievalQA.from_chain_type(
     llm,
-    retriever=vectordb.as_retriever()
+    retriever=vectordb.as_retriever(),
 )
 result = qa_chain({"query": question})
 print(result["result"])
